@@ -58,4 +58,9 @@ export default class Database extends Construct {
     });
 
   }
+
+  public allowFrom(source: ec2.IConnectable, port: ec2.Port, description?: string): void {
+      this.instance.connections.allowFrom(source, port, description);
+  }
+
 }

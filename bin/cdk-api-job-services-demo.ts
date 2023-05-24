@@ -4,9 +4,11 @@ import * as cdk from 'aws-cdk-lib';
 import { CdkApiJobServicesDemoStack } from '../lib/stacks/cdk-api-job-services-demo-stack';
 
 const version = '1';
+const framework = 'fast';
 const app = new cdk.App();
 new CdkApiJobServicesDemoStack(app, `CdkApiJobServicesDemoStack-${version}`, {
   version,
+  framework
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

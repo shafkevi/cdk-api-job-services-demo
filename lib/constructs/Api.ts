@@ -1,12 +1,11 @@
 import { Construct } from "constructs";
 import * as apprunner_alpha from '@aws-cdk/aws-apprunner-alpha';
 import { aws_ec2 as ec2 } from "aws-cdk-lib";
-import { aws_rds as rds } from "aws-cdk-lib";
+import { aws_iam as iam } from "aws-cdk-lib";
 
 export interface ApiProps {
   vpc?: ec2.IVpc,
   vpcSubnets? : ec2.SelectedSubnets,
-  database?: rds.DatabaseInstance,
   runtime: apprunner_alpha.Runtime,
   repo: string,
   branch: string,
@@ -17,14 +16,15 @@ export interface ApiProps {
 }
 
 export default class Api extends Construct {
+  public readonly instanceRole: iam.Role;
   public readonly service: apprunner_alpha.Service;
   public readonly vpcConnector: apprunner_alpha.VpcConnector;
+  public readonly appRunnerSecurityGroup: ec2.SecurityGroup;
   constructor(scope: Construct, id: string, props: ApiProps) {
     super(scope, id);
 
     const {
       vpc,
-      database,
       vpcSubnets,
       runtime,
       repo,
@@ -36,25 +36,28 @@ export default class Api extends Construct {
     } = props;
 
 
-    /* If this appRunner instance is in a VPC, create a security group allowing access to the database */
+    // If this appRunner instance is in a VPC, create a security group allowing access to the defined Subnets 
     if (vpc) {
-      const appRunnerSecurityGroup = new ec2.SecurityGroup(this, `SecurityGroup`, {
+      this.appRunnerSecurityGroup = new ec2.SecurityGroup(this, `SecurityGroup`, {
         vpc: vpc,
         description: 'SecurityGroup associated with the App Runner Service',
         securityGroupName: `${id}-SG`,
       });
-      database!.connections.allowFrom(
-        appRunnerSecurityGroup, ec2.Port.tcp(database!.instanceEndpoint.port)
-      );
       this.vpcConnector = new apprunner_alpha.VpcConnector(this, 'VpcConnector', {
         vpc,
         vpcSubnets,
-        securityGroups: [appRunnerSecurityGroup],
+        securityGroups: [this.appRunnerSecurityGroup],
       });
     }
 
+    this.instanceRole = new iam.Role(this, "instanceRole", {
+      assumedBy: new iam.ServicePrincipal("tasks.apprunner.amazonaws.com"),
+    });
+
     this.service = new apprunner_alpha.Service(this, 'Service', {
+      autoDeploymentsEnabled: true,
       vpcConnector: this.vpcConnector,
+      instanceRole: this.instanceRole,
       source: apprunner_alpha.Source.fromGitHub({
         repositoryUrl: repo,
         branch: branch,
