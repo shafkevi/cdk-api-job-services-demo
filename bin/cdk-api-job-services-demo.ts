@@ -1,14 +1,12 @@
 #!/usr/bin/env node
 import 'source-map-support/register';
 import * as cdk from 'aws-cdk-lib';
-import { CdkApiJobServicesDemoStack } from '../lib/stacks/cdk-api-job-services-demo-stack';
+import { CdkDatabaseLambdaDemoStack } from '../lib/stacks/demo-stack';
 
 const version = '1';
-const framework = 'fast';
 const app = new cdk.App();
-new CdkApiJobServicesDemoStack(app, `CdkApiJobServicesDemoStack-${version}`, {
-  version,
-  framework
+new CdkDatabaseLambdaDemoStack(app, `CdkDatabaseLambdaDemoStack-${version}`, {
+  version
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

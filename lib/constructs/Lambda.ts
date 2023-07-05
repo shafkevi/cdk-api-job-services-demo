@@ -24,6 +24,7 @@ export default class Lambda extends Construct {
 
     this.function = new lambda.Function(this, "Function", {
       vpc,
+      vpcSubnets: vpc ? { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS } : undefined,
       runtime: runtime,
       handler: handler || "index.main",
       code: lambda.Code.fromAsset(path.join(__dirname, "..", "..", codePath)),
