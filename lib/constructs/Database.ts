@@ -35,11 +35,8 @@ export default class Database extends Construct {
       vpcSubnets: this.subnets,
     });
 
-    this.databaseSecret = new secretsmanager.Secret(this, 'databaseSecret', {
-      generateSecretString: {
-        secretStringTemplate: JSON.stringify({ username: 'postgres' }),
-        generateStringKey: 'password',
-      },
+    this.databaseSecret = new rds.DatabaseSecret(this, 'databaseSecret', {
+      username: 'postgres',
     });
 
 
